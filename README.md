@@ -1,8 +1,9 @@
-# Installation guide for GitLab 7.8 on OS X 10.10 with Server 4
+# Installation guide for GitLab 7.9-stable on OS X 10.10 
+
 
 ## Requirements
+- ruby 2.1.5
 - Mac OS X 10.10
-- Server 4
 - User group `git` and user `git` in this group
 - Enable remote login for `git` user
 
@@ -55,9 +56,7 @@ If you find any issues, please let me know or send PR with fix ;-) Thank you!
 7. [Install Gitlab Shell](#7-install-gitlab-shell)
 8. [Install GitLab](#8-install-gitlab)
 9. [Check Installation](#9-check-installation)
-10. [Setting up Gitlab with Apache](#10-setting-up-gitlab-with-apache)
-11. [Automatic backups](#11-automatic-backups)
-12. [Configuring SMTP](#12-configuring-smtp)
+10. [Configuring SMTP](#12-configuring-smtp)
 
 ### 1. Install command line tools
 
@@ -109,10 +108,6 @@ Install `docutils` from http://sourceforge.net/projects/docutils/files/latest/do
 	ln -sfv /usr/local/opt/mysql/*.plist ~/Library/LaunchAgents
 	launchctl load ~/Library/LaunchAgents/homebrew.mxcl.mysql.plist
 
-#### postgresql
-	brew install postgresql
-	ln -sfv /usr/local/opt/postgresql/*.plist ~/Library/LaunchAgents
-	launchctl load ~/Library/LaunchAgents/homebrew.mxcl.postgresql.plist
 
 ### 5. Setup database
 
@@ -146,44 +141,20 @@ Try connecting to the new database with the new user
 
 	sudo -u git -H mysql -u git -pPASSWORD_HERE -D gitlabhq_production
 
-#### postgresql
-
-Connect to postgres database
-
-	psql postgres
-
-> If this operation gives you an error `psql: could not connect to server: No such file or directory` check that you are using psql from homebrew (not the one which is installed with Mac OS X). You can find all of the installed psql with `which -a psql`. To fix that you can use fully qualified path to psql or just fix `$PATH` variable by placing path to homebrew `bin` before others. 
-
-Login to PostgreSQL
-
-	psql -d postgres
-
-Create a user for GitLab.
-
-	postgres=# CREATE USER git;
-
-Create the GitLab production database & grant all privileges on database
-
-	postgres=# CREATE DATABASE gitlabhq_production OWNER git;
-
-Quit the database session
-
-	postgres=# \q
-
-Try connecting to the new database with the new user
-
-	sudo -u git -H psql -d gitlabhq_production
 
 ### 6. Install ruby
 
-OS X 10.10 has ruby 2.0. No need to install anything.
+OS X 10.10 has ruby 2.0.
+
+rudy 2.1.5 can use rbenv or rvm .The installation please google.
+
 
 ### 7. Install Gitlab Shell
 
 	cd /Users/git
 	sudo -u git git clone https://github.com/gitlabhq/gitlab-shell.git
 	cd gitlab-shell
-	sudo -u git git checkout v2.5.4
+	sudo -u git git checkout v2.6.0
 	sudo -u git cp config.yml.example config.yml
 
 Now open `config.yml` file and edit it
@@ -208,14 +179,13 @@ Do setup
 	cd /Users/git
 	sudo -u git git clone https://github.com/gitlabhq/gitlabhq.git gitlab
 	cd gitlab
-	sudo -u git git checkout 7-8-stable
+	sudo -u git git checkout 7-9-stable
 
 #### Configuring GitLab
 
 	sudo -u git cp config/gitlab.yml.example config/gitlab.yml
 	sudo -u git sed -i "" "s/\/usr\/bin\/git/\/usr\/local\/bin\/git/g" config/gitlab.yml
 	sudo -u git sed -i "" "s/\/home/\/Users/g" config/gitlab.yml
-	sudo -u git sed -i "" "s/localhost/domain.com/g" config/gitlab.yml
 
 Make sure GitLab can write to the `log/` and `tmp/` directories
 
@@ -282,73 +252,34 @@ Set up logrotate
 	sudo -u git cp config/database.yml.mysql config/database.yml
 	sudo -u git sed -i "" "s/secure password/PASSWORD_HERE/g" config/database.yml
 
-##### postgresql
-
-> By default homebrew installs postgresql with allowing access to it with local accounts, so no needs of changing passwords.
-
-	sudo -u git cp config/database.yml.postgresql config/database.yml
 
 #### Install Gems
 
-You need to edit `Gemfile` (`sudo -u git nano Gemfile`):
-
-```
-gem "underscore-rails", "~> 1.5.2"
-```
-
-You need to edit `Gemfile.lock` (`sudo -u git nano Gemfile.lock`):
-
-```
-charlock_holmes (0.7.2)
-underscore-rails (1.5.2)
-underscore-rails (~> 1.5.2)
-```
-
-*Yes, `underscore-rails` is in two places.*
 
 In case if you are using mysql as database:
 
 	sudo gem install bundler
-	sudo bundle install --deployment --without development test postgres aws
+	sudo -u git -H bundle install --deployment --without development test postgres aws
+If you can't build nokogiri 1.6.5 do this:
 
-In case if you are using postgres as database:
-
-	sudo gem install bundler
-	sudo bundle install --deployment --without development test mysql aws
-
-If you can't build nokogiri 1.6.2 do this:
-
-	brew install libxml2 libxslt
+	brew install libxml2 libxslt libiconv
 	brew link libxml2 libxslt
 
-then install libiconv from source
- 
-	wget http://ftp.gnu.org/pub/gnu/libiconv/libiconv-1.13.1.tar.gz
-	tar xvfz libiconv-1.13.1.tar.gz
-	cd libiconv-1.13.1
-	./configure --prefix=/usr/local/Cellar/libiconv/1.13.1
-	make
-	sudo make install
+	sudo gem install nokogiri -- --use-system-libraries --with-xml2-include=/usr/include/libxml2 --with-xml2-lib=/usr/lib/
 	
-finally we need to continue bundle install
-		
-	sudo bundle install --deployment --without development test mysql aws -- 
-		--with-iconv-lib=/usr/local/Cellar/libiconv/1.13.1/lib 
-		--with-iconv-include=/usr/local/Cellar/libiconv/1.13.1/include	
+	bundle config build.nokogiri --use-system-libraries --with-xml2-include=/usr/include/libxml2 --with-xml2-lib=/usr/lib/
 
-If you see error with `version_sorter` gem run this:
-
-If you are using mysql
-
-	sudo ARCHFLAGS=-Wno-error=unused-command-line-argument-hard-error-in-future bundle install --deployment --without development test postgres aws
-
-If you are using postgres
+Then
 	
-	sudo ARCHFLAGS=-Wno-error=unused-command-line-argument-hard-error-in-future bundle install --deployment --without development test mysql aws
+	sudo -u git -H bundle install --deployment --without development test postgres aws
+
+
+
+
 
 #### Initialize Database and Activate Advanced Features
 
-	sudo -u git -H bash -l -c 'bundle exec rake gitlab:setup RAILS_ENV=production'
+	sudo -u git -H bundle exec rake gitlab:setup RAILS_ENV=production
 
 Here is your admin login credentials:
 
@@ -358,7 +289,7 @@ Here is your admin login credentials:
 #### Precompile assets
 
 ```
-sudo -u git -H bash -l -c 'bundle exec rake assets:precompile RAILS_ENV=production'
+sudo -u git -H bundle exec rake assets:precompile RAILS_ENV=production
 ```
 
 #### Setup Redis Socket
@@ -406,14 +337,8 @@ sudo -u git nano /Users/git/gitlab-shell/config.yml
 #### Install web and background_jobs services
 
 Next step will setup services which will keep Gitlab up and running
-
-	sudo curl --output /Library/LaunchDaemons/gitlab.web.plist https://raw.githubusercontent.com/CiTroNaK/Installation-guide-for-GitLab-on-OS-X/master/gitlab.web.plist
-	sudo launchctl load /Library/LaunchDaemons/gitlab.web.plist
-
-	sudo curl --output /Library/LaunchDaemons/gitlab.background_jobs.plist https://raw.githubusercontent.com/CiTroNaK/Installation-guide-for-GitLab-on-OS-X/master/gitlab.background_jobs.plist
-	sudo launchctl load /Library/LaunchDaemons/gitlab.background_jobs.plist
-
-> `ProgramArguments` arrays in these plists should be in sync with `start` functions in scripts [background_jobs](https://github.com/gitlabhq/gitlabhq/blob/master/script/background_jobs) and [web](https://github.com/gitlabhq/gitlabhq/blob/master/script/web). 
+	
+	sudo rails s -e production -p 8080
 
 ### 9. Check Installation
 
@@ -421,39 +346,19 @@ Check gitlab-shell
 
 	sudo -u git /Users/git/gitlab-shell/bin/check
 
->If there is an `ECONNREFUSED`-error when checking gitlab-shell it might be a solution to add an `/etc/hosts` entry:
->`127.0.0.1	domain.com`
 
 Double-check environment configuration
 
-	sudo -u git -H bash -l -c 'bundle exec rake gitlab:env:info RAILS_ENV=production'
+	sudo -u git -H bundle exec rake gitlab:env:info RAILS_ENV=production
 
 Do a thorough check. Make sure everything is green.
 
-	sudo -u git -H bash -l -c 'bundle exec rake gitlab:check RAILS_ENV=production'
+	sudo -u git -H bundle exec rake gitlab:check RAILS_ENV=production
 
 The script complained about the init script not being up-to-date, but I assume that’s because it was modified to use /Users instead of /home. You can safely ignore that warning.
 
-### 10. Setting up Gitlab with Apache
 
-1. Setup website in Server.app (with SSL)
-2. Go to `/Library/Server/Web/Config/apache2/sites`
-3. Stop the webserver
-4. Edit your site config, for example `0000_any_443_domain.com.conf`, like vhost config in this repo.
-5. Start the webserver
-
-### 11. Automatic backups
-
-Copy `gitlab.backup.plist` to `/Library/LaunchDaemons/` and setup it.
-
-	sudo curl --output /Library/LaunchDaemons/gitlab.backup.plist https://raw.githubusercontent.com/CiTroNaK/Installation-guide-for-GitLab-on-OS-X/master/gitlab.backup.plist
-	sudo launchctl load /Library/LaunchDaemons/gitlab.backup.plist
-
-I recommend to uncomment `keep_time` in `gitlab.yml` Backup settings.
-
-> You can verify backup service with command `sudo launchctl start gitlab.backup` and by looking in logs under `\Users\git\gitlab\log\backup.stderr.log` and `\Users\git\gitlab\log\backup.stdout.log`.
-
-### 12. Configuring SMTP
+### 10. Configuring SMTP
 
 Copy config file
 
