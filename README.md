@@ -1,8 +1,10 @@
 # Installation guide for GitLab 7.9-stable on OS X 10.10 
 
 
+
 ## Requirements
 - ruby 2.1.5
+- vim
 - Mac OS X 10.10
 - User group `git` and user `git` in this group
 - Enable remote login for `git` user
@@ -159,9 +161,6 @@ rudy 2.1.5 can use rbenv or rvm .The installation please google.
 
 Now open `config.yml` file and edit it
 
-Set the `gitlab_url`. Replace gitlab.example.com wih your url (domain.com)
-
-	sudo -u git sed -i "" "s/localhost/domain.com/" config.yml
 
 Use `/Users` instead of `/home`, and change redis-cli path to homebrew’s redis-cli
 
@@ -260,6 +259,7 @@ In case if you are using mysql as database:
 
 	sudo gem install bundler
 	sudo -u git -H bundle install --deployment --without development test postgres aws
+
 If you can't build nokogiri 1.6.5 do this:
 
 	brew install libxml2 libxslt libiconv
@@ -325,20 +325,24 @@ sudo -u git -H cp config/resque.yml.example config/resque.yml
 Change the Redis socket path to `/tmp/redis.sock`:
 
 ```
-sudo -u git -H nano config/resque.yml
+sudo -u git -H vim config/resque.yml
 ```
 
-Configure gitlab-shell to use Redis sockets (`/tmp/redis.sock`):
+Configure gitlab-shell to use Redis sockets (`unix:/tmp/redis.sock`):
 
 ```
-sudo -u git nano /Users/git/gitlab-shell/config.yml
+sudo -u git vim /Users/git/gitlab-shell/config.yml
 ```
 
 #### Install web and background_jobs services
 
+Start background_jobs
+	sudo -u git -H RAILS_ENV=production bin/background_jobs start
+
+
 Next step will setup services which will keep Gitlab up and running
 	
-	sudo rails s -e production -p 8080
+	sudo -u git -H rails s -e production -p 8080
 
 ### 9. Check Installation
 
