@@ -253,6 +253,18 @@ Set up logrotate
 
 
 #### Install Gems
+RubyGems taobao mirror
+	
+	$ gem sources --remove https://rubygems.org/
+	$ gem sources -a https://ruby.taobao.org/
+	$ gem sources -l
+	*** CURRENT SOURCES ***
+
+	https://ruby.taobao.org
+
+change first line in Gemfile
+	
+	source 'https://ruby.taobao.org/'
 
 
 In case if you are using mysql as database:
@@ -337,6 +349,7 @@ sudo -u git vim /Users/git/gitlab-shell/config.yml
 #### Install web and background_jobs services
 
 Start background_jobs
+	
 	sudo -u git -H RAILS_ENV=production bin/background_jobs start
 
 
