@@ -273,7 +273,7 @@ change first line in Gemfile
 In case if you are using mysql as database:
 
 	sudo gem install bundler
-	sudo -u git -H bundle install --deployment --without development test postgres aws
+	sudo -u git -H bundle install --deployment --without test postgres aws
 
 If you can't build nokogiri 1.6.5 do this:
 
@@ -362,7 +362,7 @@ Next step will setup services which will keep Gitlab up and running
 
 chmod  development.log
 
-  sudo chmod 0666 /Users/git/gitlab/log/development.log
+  	sudo chmod 0666 /Users/git/gitlab/log/development.log
 
 ### 9. Check Installation
 
