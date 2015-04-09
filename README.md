@@ -1,4 +1,4 @@
-# Installation guide for GitLab 7.9-stable on OS X 10.10 
+# Installation guide for GitLab 7.9-stable on OS X 10.10
 
 
 
@@ -73,7 +73,7 @@ If you find any issues, please let me know or send PR with fix ;-) Thank you!
 	brew doctor
 
 ### 3. Install some prerequisites
-	
+
 	brew install icu4c git logrotate redis libxml2 cmake pkg-config
 
 	ln -sfv /usr/local/opt/logrotate/*.plist ~/Library/LaunchAgents
@@ -132,11 +132,11 @@ Create a new user for our gitlab setup 'git'
 
 Create database
 
-	CREATE DATABASE IF NOT EXISTS `gitlabhq_production` DEFAULT CHARACTER SET `utf8` COLLATE `utf8_unicode_ci`;
+	CREATE DATABASE IF NOT EXISTS `gitlabhq_development` DEFAULT CHARACTER SET `utf8` COLLATE `utf8_unicode_ci`;
 
 Grant the GitLab user necessary permissions on the table.
 
-	GRANT SELECT, LOCK TABLES, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER ON `gitlabhq_production`.* TO 'git'@'localhost';
+	GRANT SELECT, LOCK TABLES, INSERT, UPDATE, DELETE, CREATE, DROP, INDEX, ALTER ON `gitlabhq_development`.* TO 'git'@'localhost';
 
 Quit the database session
 
@@ -144,7 +144,7 @@ Quit the database session
 
 Try connecting to the new database with the new user
 
-	sudo -u git -H mysql -u git -pPASSWORD_HERE -D gitlabhq_production
+	sudo -u git -H mysql -u git -pPASSWORD_HERE -D gitlabhq_development
 
 
 ### 6. Install ruby
@@ -242,7 +242,7 @@ Copy rack attack middleware config
 	sudo -u git -H cp config/initializers/rack_attack.rb.example config/initializers/rack_attack.rb
 
 Set up logrotate
-	
+
 	sudo mkdir /etc/logrotate.d/
 	sudo cp lib/support/logrotate/gitlab /etc/logrotate.d/gitlab
 	sudo sed -i "" "s/\/home/\/Users/g" /etc/logrotate.d/gitlab
@@ -257,7 +257,7 @@ Set up logrotate
 
 #### Install Gems
 RubyGems taobao mirror
-	
+
 	$ gem sources --remove https://rubygems.org/
 	$ gem sources -a https://ruby.taobao.org/
 	$ gem sources -l
@@ -266,7 +266,7 @@ RubyGems taobao mirror
 	https://ruby.taobao.org
 
 change first line in Gemfile
-	
+
 	source 'https://ruby.taobao.org/'
 
 
@@ -281,11 +281,11 @@ If you can't build nokogiri 1.6.5 do this:
 	brew link libxml2 libxslt
 
 	sudo gem install nokogiri -- --use-system-libraries --with-xml2-include=/usr/include/libxml2 --with-xml2-lib=/usr/lib/
-	
+
 	bundle config build.nokogiri --use-system-libraries --with-xml2-include=/usr/include/libxml2 --with-xml2-lib=/usr/lib/
 
 Then
-	
+
 	sudo -u git -H bundle install --deployment --without development test postgres aws
 
 
@@ -294,7 +294,7 @@ Then
 
 #### Initialize Database and Activate Advanced Features
 
-	sudo -u git -H bundle exec rake gitlab:setup RAILS_ENV=production
+	sudo -u git -H bundle exec rake gitlab:setup RAILS_ENV=development
 
 Here is your admin login credentials:
 
@@ -304,7 +304,7 @@ Here is your admin login credentials:
 #### Precompile assets
 
 ```
-sudo -u git -H bundle exec rake assets:precompile RAILS_ENV=production
+sudo -u git -H bundle exec rake assets:precompile RAILS_ENV=development
 ```
 
 #### Setup Redis Socket
@@ -352,13 +352,17 @@ sudo -u git vim /Users/git/gitlab-shell/config.yml
 #### Install web and background_jobs services
 
 Start background_jobs
-	
-	sudo -u git -H RAILS_ENV=production bin/background_jobs start
+
+	sudo -u git -H RAILS_ENV=development bin/background_jobs start
 
 
 Next step will setup services which will keep Gitlab up and running
-	
-	sudo rails s -e production -p 8080
+
+	sudo rails s -e development -p 8080
+
+chmod  development.log
+
+  sudo chmod 0666 /Users/git/gitlab/log/development.log
 
 ### 9. Check Installation
 
@@ -369,11 +373,11 @@ Check gitlab-shell
 
 Double-check environment configuration
 
-	sudo -u git -H bundle exec rake gitlab:env:info RAILS_ENV=production
+	sudo -u git -H bundle exec rake gitlab:env:info RAILS_ENV=development
 
 Do a thorough check. Make sure everything is green.
 
-	sudo -u git -H bundle exec rake gitlab:check RAILS_ENV=production
+	sudo -u git -H bundle exec rake gitlab:check RAILS_ENV=development
 
 The script complained about the init script not being up-to-date, but I assume that’s because it was modified to use /Users instead of /home. You can safely ignore that warning.
 
