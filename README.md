@@ -31,6 +31,9 @@ sudo cp -R /System/Library/User\ Template/English.lproj /Users/git
 sudo chown -R git:git /Users/git
 ```
 
+Suggest git user should be admin
+
+
 Hide the git user from the login screen:
 
 	 sudo defaults write /Library/Preferences/com.apple.loginwindow HiddenUsersList -array-add git
@@ -355,7 +358,7 @@ Start background_jobs
 
 Next step will setup services which will keep Gitlab up and running
 	
-	sudo -u git -H rails s -e production -p 8080
+	sudo rails s -e production -p 8080
 
 ### 9. Check Installation
 
