@@ -337,18 +337,22 @@ Configure Redis connection settings:
 sudo -u git -H cp config/resque.yml.example config/resque.yml
 ```
 
-Change the Redis socket path to `/tmp/redis.sock`:
+Change the Redis socket path to `unix:/tmp/redis.sock`:
 
-```
+``
 sudo -u git -H vim config/resque.yml
-```
+``
 
-Configure gitlab-shell to use Redis sockets (`unix:/tmp/redis.sock`):
+development: unix:/tmp/redis.sock
+--
+Configure gitlab-shell to use Redis sockets (`/tmp/redis.sock`):
 
-```
+``
 sudo -u git vim /Users/git/gitlab-shell/config.yml
-```
+``
 
+socket: /tmp/redis.sock
+--
 #### Install web and background_jobs services
 
 Start background_jobs
