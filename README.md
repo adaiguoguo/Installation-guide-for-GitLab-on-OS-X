@@ -1,4 +1,4 @@
-# Installation guide for GitLab 7.9-stable on OS X 10.10 
+# Installation guide for GitLab 7.9-stable on OS X 10.10
 
 
 
@@ -73,7 +73,7 @@ If you find any issues, please let me know or send PR with fix ;-) Thank you!
 	brew doctor
 
 ### 3. Install some prerequisites
-	
+
 	brew install icu4c git logrotate redis libxml2 cmake pkg-config
 
 	ln -sfv /usr/local/opt/logrotate/*.plist ~/Library/LaunchAgents
@@ -242,7 +242,7 @@ Copy rack attack middleware config
 	sudo -u git -H cp config/initializers/rack_attack.rb.example config/initializers/rack_attack.rb
 
 Set up logrotate
-	
+
 	sudo mkdir /etc/logrotate.d/
 	sudo cp lib/support/logrotate/gitlab /etc/logrotate.d/gitlab
 	sudo sed -i "" "s/\/home/\/Users/g" /etc/logrotate.d/gitlab
@@ -257,7 +257,7 @@ Set up logrotate
 
 #### Install Gems
 RubyGems taobao mirror
-	
+
 	$ gem sources --remove https://rubygems.org/
 	$ gem sources -a https://ruby.taobao.org/
 	$ gem sources -l
@@ -266,7 +266,7 @@ RubyGems taobao mirror
 	https://ruby.taobao.org
 
 change first line in Gemfile
-	
+
 	source 'https://ruby.taobao.org/'
 
 
@@ -281,11 +281,11 @@ If you can't build nokogiri 1.6.5 do this:
 	brew link libxml2 libxslt
 
 	sudo gem install nokogiri -- --use-system-libraries --with-xml2-include=/usr/include/libxml2 --with-xml2-lib=/usr/lib/
-	
+
 	bundle config build.nokogiri --use-system-libraries --with-xml2-include=/usr/include/libxml2 --with-xml2-lib=/usr/lib/
 
 Then
-	
+
 	sudo -u git -H bundle install --deployment --without development test postgres aws
 
 
@@ -337,27 +337,29 @@ Configure Redis connection settings:
 sudo -u git -H cp config/resque.yml.example config/resque.yml
 ```
 
-Change the Redis socket path to `/tmp/redis.sock`:
+Change the Redis socket path to `unix:/tmp/redis.sock`:
 
 ```
 sudo -u git -H vim config/resque.yml
 ```
+Exp:
+production: unix:/tmp/redis.sock
 
-Configure gitlab-shell to use Redis sockets (`unix:/tmp/redis.sock`):
+Configure gitlab-shell to use Redis sockets (`/tmp/redis.sock`):
 
 ```
 sudo -u git vim /Users/git/gitlab-shell/config.yml
 ```
-
-#### Install web and background_jobs services
+Exp:
+Socket: /tmp/redis.sock
 
 Start background_jobs
-	
+
 	sudo -u git -H RAILS_ENV=production bin/background_jobs start
 
 
 Next step will setup services which will keep Gitlab up and running
-	
+
 	sudo rails s -e production -p 8080
 
 ### 9. Check Installation
