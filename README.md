@@ -31,7 +31,7 @@ sudo cp -R /System/Library/User\ Template/English.lproj /Users/git
 sudo chown -R git:git /Users/git
 ```
 
-Suggest git user should be admin
+Warning!!! git user should be admin
 
 
 Hide the git user from the login screen:
@@ -362,7 +362,7 @@ Start background_jobs
 
 Next step will setup services which will keep Gitlab up and running
 
-	sudo rails s -e development -p 8080
+	sudo -u git -H rails s -e development -p 8080
 
 chmod  development.log
 
